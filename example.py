@@ -35,7 +35,7 @@ def breastcheckbenchmark(hyperparameters:list,part:str):
                 clusterlist=["kmeans","cosine"],
                 silhouettelist=["cosine","euclidean"],
                 type_clusteringlist=["multi","single"],
-                alphalist=[1.0],
+                alphalist=[0.6,0.7,0.8,0.9,1.0],
                 )
 
     seef._job_meta()
@@ -91,9 +91,9 @@ if __name__ == "__main__":
         injection = [injection[int(args[2])]]
         part = args[1]+args[2]
     
-    noise= [0.0]
-    bootstrap=[False]
-    latents = [15,10]
+    noise= [0.0,0.01,0.03,0.05]
+    bootstrap=[False,True]
+    latents = [250,200,150,100,50,20,10]
     listoflist = [noise,bootstrap,threshold,latents,injection]
     hyperparameters = []
     for i in product(*listoflist):
