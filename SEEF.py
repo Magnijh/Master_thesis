@@ -307,8 +307,6 @@ class SEEF():
     
     def _save_results(self, datasettype: str = "real" ) -> pd.DataFrame:
         columns = self._dfcolumns(datasettype)
-        print(columns)
-        print(self.result)
         return pd.DataFrame(
             [self.result],
             columns=columns,
@@ -329,7 +327,6 @@ class SEEF():
         else:
             results2 = self.Evaluator.COSMICevaluate(signature_file,None,genome_build)
         self.result = result + [x for x in results2]
-        self._print(self.result)
          
         df = pd.DataFrame.from_dict(self.Evaluator.knownsig,orient="index")[["cos","latent"]]   
         df.loc[df["cos"]>0].to_csv(self.path+"/run_"+str(self.outerrun)+"/knownsig.tsv",sep="\t",index_label="signature")
@@ -362,9 +359,7 @@ class SEEF():
         if os.path.exists(localpath+"/sigMatrix.csv"):
             self.sigMatrix =pd.read_table(localpath+"/sigMatrix.csv",index_col=0)
             tempp +=1
-        # print(tempp)
         if tempp<1:
-            # print("didn't work")
             self.Clustering.df = self._keepdf.copy()
             self.df, self.injection_df, self.sigMatrix, self.weights = injectDataset(self._injectionprocent,self.Clustering.df,localpath,nrOfSignatures=1)
 
@@ -384,7 +379,6 @@ class SEEF():
         pd.DataFrame([result],columns=columns).to_csv(self.path+"/run_"+str(self.outerrun)+"/preparameter.tsv",sep="\t",index=False)
         return result
         
-    #TODO make run function to handle clustering and evaluation class
     def run(self):
         self._run_meta()
         a = { w:[] for w in self.Evaluator.GRCh38.columns.to_list()}
@@ -393,17 +387,14 @@ class SEEF():
         else:
             self.path = self._outputfolder +f"/results/{self._method.__name__}_L{self.latents}_T{self.threshold}_B{self.bootstrap}_I{self.injectionprocent}_N{self.noise}_CM{self.cluster_method}_SM{self._silhouette}_TC{self._type_clustering}"
         self.Clustering.path = self.path
-        # print(self.path)
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        #TODO this should probably not be run everytime, as it will give a uncertainity in the results
         
         if self.injectionprocent > 0 and self.injectionRunned == False:
             self._create_injection_dataset()
             self.injectionRunned = True
         if self.injectionprocent > 0:
             self.Clustering.df = self.injection_df.copy()
-        # input()
         self.Clustering.run(clusterlist=self.clusterlist,
                             silhouettelist=self.silhouettelist,
                             type_clusteringlist=self.type_clusteringlist,alphalist=self.alphalist)
@@ -412,7 +403,6 @@ class SEEF():
             
         else:
             self.COSMIC_evaluate(self.path+"/run_"+str(self.outerrun)+"/signatures.tsv",self.refsig)
-        # self.save_all_results("real")
     
     def _benchmark_eval(self):
         print("Running benchmark eval")
@@ -445,10 +435,10 @@ class SEEF():
             tempknowndf = pd.DataFrame.from_dict(self.Evaluator.knownsig,orient="index")[[
                 "cos","latent"]]
             tempknowndf["runnr"]=self.outerrun
-            tempknowndf.to_csv(self.path+"/run_"+str(self.outerrun)+"/knownsig.tsv",sep="\t",index_label="signature")
+            tempknowndf.to_csv(self.path+"/run_"+str(self.outerrun)+"/knownsigs/"+sigdirlist[i],sep="\t",index_label="signature")
             temphungdf =pd.DataFrame(self.Evaluator.bestMatchCosintosave,columns=["cos","latent","sig"])
             temphungdf["runnr"]=self.outerrun
-            temphungdf.to_csv(self.path+"/run_"+str(self.outerrun)+"/hungarianMatchCosine.tsv",sep="\t",index=False)
+            temphungdf.to_csv(self.path+"/run_"+str(self.outerrun)+"/hungarianMatchCosine/"+sigdirlist[i],sep="\t",index=False)
             allresults.append(result)
         pd.DataFrame(allresults,columns=self._dfcolumns("real")).sort_values(by=["method","bootstrap"
                     ,"cut_off"],ascending=[False,False,True]).to_csv(

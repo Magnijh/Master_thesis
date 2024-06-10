@@ -35,7 +35,7 @@ def breastcheckbenchmark(hyperparameters:list,part:str):
                 clusterlist=["kmeans","cosine"],
                 silhouettelist=["cosine","euclidean"],
                 type_clusteringlist=["multi","single"],
-                alphalist=[0.6,0.7,0.8,0.9],
+                alphalist=[1.0],
                 )
 
     seef._job_meta()
@@ -47,7 +47,7 @@ def breastcheckbenchmark(hyperparameters:list,part:str):
         seef.latents = hyperparameters[0][3]
         seef.injectionprocent = hyperparameters[0][4] 
         hyperparameters = hyperparameters[1:]
-        for i in range(0,3):
+        for i in range(0,1):
             seef.outerrun = i
             seef.run()
         seef.mergerunresults()
@@ -91,9 +91,9 @@ if __name__ == "__main__":
         injection = [injection[int(args[2])]]
         part = args[1]+args[2]
     
-    noise= [0.0,0.01,0.03,0.05]
-    bootstrap=[False,True]
-    latents = [250,200,150,100,50,25,10]
+    noise= [0.0]
+    bootstrap=[False]
+    latents = [15,10]
     listoflist = [noise,bootstrap,threshold,latents,injection]
     hyperparameters = []
     for i in product(*listoflist):
@@ -105,6 +105,6 @@ if __name__ == "__main__":
             hyperparameters = readcheckpoint(part)
  
     
-    breastcheckbenchmark(hyperparameters,part)
-    plottingdata("output54lost","testtitle","testxtitle")
-    injectionplotting("output54lost","testtitle",)
+    # breastcheckbenchmark(hyperparameters,part)
+    plottingdata("outputbenchmark","testtitle","testxtitle")
+    injectionplotting("outputbenchmark","testtitle",)

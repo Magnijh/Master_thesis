@@ -21,7 +21,6 @@ def injectDataset(
     else:
         realData = pd.read_table(datasetRealPath, index_col=0)
 
-    #TODO if column >100 than 0 fake column might be added not good
     # Getting the % vaule of columns
     columnsNum = realData.shape[1]
     columnsPercentage = int(columnsNum * (injectProcent / 100))

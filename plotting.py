@@ -91,7 +91,7 @@ def plottingdata(pathstr,title:str,xtitle:str):
                  ">0.95",">0.96",">0.97",
                  ">0.98",">0.99","best>0.95",
                  "best>0.99"]
-    noneinjectiondf = df.loc[df["injectionprocent"]==0]
+    noneinjectiondf = df.loc[df["injection_percentage"]==0]
     if not os.path.exists(pathstr+"/images"):
         os.makedirs(pathstr+"/images")
     predf = noneinjectiondf.groupby(["method","runnr","latents","cut_off","bootstrap","noise"])[valuelist].mean()
@@ -109,10 +109,10 @@ def plottingdata(pathstr,title:str,xtitle:str):
         g12.case.set_xlabel(xtitle,fontsize=30)
         g12.savefig(f"{pathstr}/images/boxplot_pre_{filtering}.png")
         
-    postdf = noneinjectiondf.groupby(["alpha","type_clustering","cluster_method","silhouette_metric"])[valuelist].mean()
+    postdf = noneinjectiondf.groupby(["alpha","optimal_selection","cluster_method","silhouette_metric"])[valuelist].mean()
     postdf = postdf.reset_index()
     refletter = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
-    for filtering in ["alpha","type_clustering","silhouette_metric"]:
+    for filtering in ["alpha","optimal_selection","silhouette_metric"]:
         postdf[f"cluster_method_{filtering}"] =  df["cluster_method"].astype(str)  + " "+postdf[filtering].astype(str)  
         filtering= f"cluster_method_{filtering}"
         plot2,plot3 = createggplots(postdf,filtering,refletter.pop(0))
@@ -133,6 +133,8 @@ def injectionplotting(pathstr,title:str):
     df=pd.read_table(pathstr+"/results.tsv",sep="\t")
     if not os.path.exists(pathstr+"/images"):
         os.makedirs(pathstr+"/images")
+    if df["injection_percentage"].max()==0:
+        return
     tuplesofinjection=(df["injections_match"])
     listofvalues = []
     for t in tuplesofinjection:

@@ -81,17 +81,14 @@ def create_dataset(
 
     # dataset (mutations X signatures)
     signatures = pd.read_table(signaturePath, index_col=0)
-    # print(signatures)
     # randomly select sigNum signatures
     sigIndex, sigMatrix, sigName = _selectSignatures(
         signatures, sigNum, cosineTreshhold
     )
-    # print(numDatapoints)
     # random mutation counts for numDatapoints
     mutationCounts = np.random.randint(
         mutationRange[0], mutationRange[1], numDatapoints
     )
-    # print(mutationCounts)
     # random waight (signature x numDatapoints)
     weights = _generate_random_numbers_with_zeros(
         sigNum, mutationCounts[0], pSigExposure, True
@@ -143,8 +140,6 @@ def create_dataset(
     weights.columns = dataset.columns
     weights.to_csv(output_path + "weights.csv")
     return dataset, sigMatrix, weights
-
-    return dataset
 
 
 if __name__ == "__main__":

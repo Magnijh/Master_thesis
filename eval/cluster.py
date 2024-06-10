@@ -95,7 +95,6 @@ class k_cluster:
         if self._df.index.name != "Type":
             self._df.index.name = "Type"
         self._df = self._df.sort_index()
-        print(self._df.index)
         assert runs > 0, "runs must be greater at least 1"
         self.runs = runs
         assert components[0] > 1, "components[0] must be greater than 1"
@@ -164,12 +163,10 @@ class k_cluster:
             type_clusteringlist:list = ["single","multi"],
             silhouettelist:list = ["cosine","euclidean"],
             alphalist:list=[0.6]):
-        # print(self.path+"/run_"+str(self.outerrun))
         if not os.path.exists(self.path+"/run_"+str(self.outerrun)):
             os.makedirs(self.path+"/run_"+str(self.outerrun))
         self._print("Running cutting off")
         self._cut_off()
-        # print(self.df)
         t1 = time.time()
         self._print("Running method_cluster")
         self._method_iteration()
@@ -189,7 +186,10 @@ class k_cluster:
         
         
         
-    def _cluster_signatures_benchmark(self):
+    def _cluster_signatures_benchmark(self,clusternames:list = ["kmeans","cosine"],
+                                      type_clusteringlist:list = ["single","multi"]
+                                      ,metric:list = ["cosine","euclidean"],
+                                      alphalist:list=[1.0]):
         pass
 
     def _cut_off(self):
@@ -418,11 +418,6 @@ class AE_cluster(k_cluster):
         component = self._latent_checker()
         component  = range(2,component)
         
-        clusternames = ["kmeans","cosine"] #TODO this variable should be a parameter
-        type_clusteringlist = ["single","multi"]
-        metric = ["cosine","euclidean"]
-        alphalist = [0.6]
-        # alphalist = []
         
         
         
@@ -441,20 +436,14 @@ class AE_cluster(k_cluster):
                 silhouette_scores = []
                 inertia_scores = []
                 for i_cluster_centroids, i_silhouette_scores, i_inertia_scores,cluster in results_list:
-                    # for l in i_cluster_centroids:
-                        # print(np.min(l))
-                    # print(np.min(i_cluster_centroids))        
+                        
                     cluster_centroids.append(i_cluster_centroids)
                     silhouette_scores.append(i_silhouette_scores)
                     inertia_scores.append(i_inertia_scores)     
                     clusterlist.append(cluster)
-                    # input()
-                # print(cluster_centroids)
-                # print(cluster_centroids.copy())
-                # input("---------cluster_centroids---------")
+                
                 tempcluster = [clustered]*len(cluster_centroids)
                 for alpha in alphalist:
-                    # print(clustered,metrici,alpha)
                     a_inner_centroids, a_inner_silhouette, a_inner_inertia, a_cluster_components=self._enumerate_cluster_benchmark(cluster_centroids, silhouette_scores, inertia_scores,tempcluster,alpha)
                 
                     for type_cluster in type_clusteringlist:
@@ -524,7 +513,6 @@ class AE_cluster(k_cluster):
                                 self.signatures = o_cluster_centroids[np.argmax(aux_loss)]
                             self._find_exposures_benchmark(clustered,type_cluster,metrici,alpha)
                             
-                    # self._print(f"Found {len(self.signatures)} signatures for {clusteri} {metrici} with {type_cluster} type clustering")
                     
        
        
@@ -549,13 +537,9 @@ class AE_cluster(k_cluster):
         
         for c_cluster_centroids, c_silhouette_scores, c_inertia_scores,cluster in results_list:  
             
-            # for l in c_cluster_centroids:
-                # print(np.min(l))      
             cluster_centroids.append(c_cluster_centroids)
             silhouette_scores.append(c_silhouette_scores)
-            inertia_scores.append(c_inertia_scores)
-            # input()
-        # input()    
+            inertia_scores.append(c_inertia_scores)  
         if self.cluster == "kmeans":
             cluster_centroids, silhouette_scores, inertia_scores, cluster_components=self._enumerate_cluster(cluster_centroids, silhouette_scores, inertia_scores)
             
@@ -567,7 +551,6 @@ class AE_cluster(k_cluster):
                 aux_loss = loss_hat - self.alpha * silhouette_hat
             
             if self.type_clustering == "multi":
-                # print(cluster_centroids)
                 nparr = np.concatenate(cluster_centroids,axis=0)
                 nparr = nparr/nparr.sum(axis=1,keepdims=True)
                 arr = np.unique(nparr,axis=0)
@@ -577,10 +560,8 @@ class AE_cluster(k_cluster):
                 o_cluster_components = []
                 
                 o_range = range(2,arr.shape[0]-1)
-                larr = [arr]*5 #TODO this is extremely dumb, but i don't have to change the function
-                
-                pool = mp.Pool(5)
-                #TODO _kmeans is taking 99.6% of the time for the function
+                larr = [arr]*1 
+                pool = mp.Pool(1)
                 pool_clustering = partial(clustering,prelim_signatures=larr,
                                             components=o_range,metric=self.silhouette_metric,
                                             cluster=self.cluster,random_state=42)
@@ -595,10 +576,6 @@ class AE_cluster(k_cluster):
                     o_inertia_scores.append(i_inertia_scores)
                     
                 o_cluster_centroids, o_silhouette_scores, o_inertia_scores, o_cluster_components=self._enumerate_cluster(o_cluster_centroids, o_silhouette_scores, o_inertia_scores)    
-                # silhouette_hat = (
-                #     np.array(o_silhouette_scores) - np.mean(o_silhouette_scores)
-                # ) / np.std(o_silhouette_scores)
-                # inertia_hat = (np.array(o_inertia_scores) - np.mean(o_inertia_scores)) / np.std(o_inertia_scores)
                 aux_loss = [a*(self.alpha-b) for a,b in zip(o_inertia_scores,o_silhouette_scores)]
             
             self.signatures = cluster_centroids[np.argmin(aux_loss)]
@@ -618,8 +595,8 @@ class AE_cluster(k_cluster):
                 o_inertia_scores = []
                 o_cluster_components = []
                 o_range = range(2,arr.shape[0]-1)
-                larr = [arr]*5 #TODO this is extremely dumb, but i don't have to change the function
-                pool = mp.Pool(5)
+                larr = [arr]*1 
+                pool = mp.Pool(1)
                 pool_clustering = partial(clustering,prelim_signatures=larr,
                                             components=o_range,metric=self.silhouette_metric,
                                             cluster=self.cluster,random_state=42)
@@ -638,13 +615,7 @@ class AE_cluster(k_cluster):
                                 
             self.signatures = cluster_centroids[np.argmax(aux_loss)]
             
-        # cluster_components = [f"{i}-{x}" for i, x in enumerate(cluster_components)]
-        # self._plot_aux_loss(
-        #     cluster_components,
-        #     aux_loss,
-        #     "Run-components",
-        #     "Auxiliary loss",
-        # )
+       
         
     
         
@@ -659,8 +630,6 @@ def cosine_clustering(n_points,n_cluster:int = 3,max_iter:int = 300,threshold:fl
     random_centroid = np.random.choice(n_points.shape[0], n_cluster, replace=False)
     
     c_points = n_points[random_centroid]
-    # cos_score = np.array([0]*c_points.shape[0],dtype=float)
-    # cos_sim = np.array([[0]*random_centroid.shape[0]]*n_points.shape[0],dtype=float)
     next_centroid = c_points.copy()
     breakhistory = 3
     breakcheck = 0
@@ -678,15 +647,11 @@ def cosine_clustering(n_points,n_cluster:int = 3,max_iter:int = 300,threshold:fl
             next_total_points[cluster[i]] += 1
             cos_score[cluster[i]] += cos_sim[i][cluster[i]]
             
-        #TODO edge case when centroid is almost the same as n_points
-        #TODO might just be better to set it to last known point, or just random
         for i in np.setdiff1d(np.arange(0,random_centroid.shape[0],1),cluster):
             inneremptycheck = 1
             tempflag = True
             tt = 0
             while tempflag == True:
-                # strtext = "runnr : "+str(runs)+" n_cluster : "+str(n_cluster)+" empty cluster : "+str(i)+" iter : "+str(tt)+" emptycheck : "+str(emptycheck)
-                # Sprint.sprint(strtext,verbose=0,filepath=f"test2/emptycheck{runs}")
                 tempbest =np.argsort(cos_sim[:,1])[::-1]
                 removebest = cluster[tempbest[tt]]
                 if next_total_points[removebest] >1:

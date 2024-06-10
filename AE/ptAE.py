@@ -119,15 +119,11 @@ def train_model(
     model.share_memory()
     total_train_loss = []
     total_test_loss = []
-    # ttotal = time.time()
     for e in range(epochs):
         train_losses = []
-        # t1 = time.time()
         for x_n, x_o in train_loader:
             x_n = x_n.to(device)
             x_o = x_o.to(device)
-            # print(x_n)
-            # print(x_o)
             optimizer.zero_grad()
             output = model(x_n)
             loss = criterion(output, x_o)
@@ -219,7 +215,6 @@ def _flippedAE(df: pd.DataFrame, components: int = 200, criterion=nn.MSELoss(),n
     epochs = 500
     learning_rate = 1e-3
     original_dim = df.shape[1]
-    # print(original_dim,components)
     
     x_train, x_train_noisy, x_test, x_test_noisy = prepare_data(df,noise)
 
@@ -268,7 +263,6 @@ def flipped_mseAE(df : pd.DataFrame,components: int=50,noise:float = 0.0):
 
 if __name__ == "__main__":
     df = pd.read_csv(r"datasets\england\catalogues_Breast_SBS\catalogues_Breast_SBS.tsv", sep="\t", index_col=0)
-    # input()
     
     t1 = time.time()
     sig, weights,loss = mseAE(df, 100,0)

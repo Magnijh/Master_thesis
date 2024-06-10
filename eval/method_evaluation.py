@@ -160,7 +160,6 @@ class MethodEvaluator:
         signatures: pd.DataFrame,
         knownSignatures: pd.DataFrame,
     ):
-        # self._deeperEvaluateAgainstKnownSignatures(signatures, knownSignatures)
         self.cosineSimilarityMatrix = self._makeCosineSimilarityMatrix(
             signatures, knownSignatures
         )
@@ -173,7 +172,6 @@ class MethodEvaluator:
         return numcos
 
     def _checkDuplicates(self, signatures: pd.DataFrame, knownSignatures: pd.DataFrame):
-        #TODO problem by using hungarian algorithm is that he can choose a suboptimal solution for a sig at expense of the total score
         # hungarian algorithm to find the best match
         self.hungarian_row_ind, self.hungarian_col_ind = linear_sum_assignment(
             self.cosineSimilarityMatrix, maximize=True
@@ -262,7 +260,6 @@ class MethodEvaluator:
         self.bestMatchCosintosave = self.bestMatchCosin.copy()
         numBest95 = len([x[0] for x in self.bestMatchCosin if x[0] >= 0.95])
         numBest99 = len([x[0] for x in self.bestMatchCosin if x[0] >= 0.99])
-        # print(self.bestMatchCosin)
         if __name__ == "__main__":
             print(f"Signatures found: {numFoundSig}")
             print(f"Signatures with cosin > 0.85: {numFoundCos[0]}")
@@ -370,11 +367,5 @@ class MethodEvaluator:
 
 if __name__ == "__main__":
     evaluator = MethodEvaluator()
-    # results = evaluator.evaluate(
-    #     "sigGen/datasetOut/sigMatrix.csv",
-    #     "sigGen/datasetOut/weights.csv",
-    #     "sigGen/datasetOut/sigMatrix.csv",
-    #     "sigGen/datasetOut/weights.csv",
-    # )
     results = evaluator.COSMICevaluate("eval/nmf_output/signatures.tsv", GRCh="GRCh37")
     print(results)
