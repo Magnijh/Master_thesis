@@ -10,4 +10,4 @@
 
 #module load anaconda/3
 #source activate base
-python SEEF.py 0 0
+python example.py 0 0
